@@ -1,45 +1,108 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MyMvcApp.Models;
+using System.Linq;
 
-namespace MyMvcApp.Controllers;
-
-public class UserController : Controller
+namespace MyMvcApp.Controllers
 {
-    public static System.Collections.Generic.List<User> userlist = new System.Collections.Generic.List<User>();
-
-    // GET: User
-    public ActionResult Index()
+    public class UserController : Controller
     {
-        return View(userlist);
-    }
+        public static System.Collections.Generic.List<User> userlist = new System.Collections.Generic.List<User>();
 
-    // GET: User/Details/5
-    public ActionResult Details(int id)
-    {
-        var user = userlist.FirstOrDefault(u => u.Id == id);
-        if (user == null)
+        // GET: User
+        public ActionResult Index()
         {
-            return NotFound();
+            return View(userlist);
         }
-        return View(user);
-    }
 
-    // GET: User/Create
-    public ActionResult Create()
-    {
-        return View();
-    }
-
-    // POST: User/Create
-    [HttpPost]
-    public ActionResult Create(User user)
-    {
-        if (ModelState.IsValid)
+        // GET: User/Details/5
+        public ActionResult Details(int id)
         {
-            userlist.Add(user);
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        // GET: User/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: User/Create
+        [HttpPost]
+        public ActionResult Create(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                userlist.Add(user);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(user);
+        }
+
+        // GET: User/Edit/5
+        public ActionResult Edit(int id)
+        {
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        // POST: User/Edit/5
+        [HttpPost]
+        public ActionResult Edit(int id, User updatedUser)
+        {
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                user.Name = updatedUser.Name;
+                return RedirectToAction(nameof(Index));
+            }
+            return View(updatedUser);
+        }
+
+        // GET: User/Delete/5
+        public ActionResult Delete(int id)
+        {
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        // POST: User/Delete/5
+        [HttpPost, ActionName("Delete")]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            userlist.Remove(user);
             return RedirectToAction(nameof(Index));
         }
-        return View(user);
+
+        // GET: User/Search
+        public ActionResult Search(string searchTerm)
+        {
+            var filteredUsers = userlist.Where(u => u.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+            return View("Index", filteredUsers);
+        }
     }
 }
