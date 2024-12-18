@@ -1,108 +1,98 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MyMvcApp.Models;
-using System.Linq;
+using MyMvcApp.Data;
+namespace MyMvcApp.Controllers;
 
-namespace MyMvcApp.Controllers
+public class UserController : Controller
 {
-    public class UserController : Controller
-    {
-        public static System.Collections.Generic.List<User> userlist = new System.Collections.Generic.List<User>();
+        private readonly IUserService _context;
 
+        public UserController(IUserService context)
+        {
+            _context = context;
+        }
         // GET: User
         public ActionResult Index()
         {
-            return View(userlist);
+            var users = _context.GetAllUsers();
+            return View(users);
         }
 
-        // GET: User/Details/5
         public ActionResult Details(int id)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _context.GetAllUsers().SingleOrDefault(i=> i.Id == id);
             if (user == null)
             {
-                return NotFound();
+            return NotFound();
             }
             return View(user);
         }
 
-        // GET: User/Create
         public ActionResult Create()
         {
-            return View();
+            var model = new User();
+            return View(model);
         }
 
-        // POST: User/Create
         [HttpPost]
         public ActionResult Create(User user)
         {
             if (ModelState.IsValid)
             {
-                userlist.Add(user);
-                return RedirectToAction(nameof(Index));
+            _context.AddUser(user);
+            return RedirectToAction(nameof(Index));
             }
             return View(user);
         }
 
-        // GET: User/Edit/5
         public ActionResult Edit(int id)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _context.GetAllUsers().SingleOrDefault(i=> i.Id == id);
             if (user == null)
             {
-                return NotFound();
+            return NotFound();
             }
             return View(user);
         }
 
-        // POST: User/Edit/5
         [HttpPost]
         public ActionResult Edit(int id, User updatedUser)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (ModelState.IsValid)
+            {
+            var user = _context.GetAllUsers().SingleOrDefault(i=> i.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
-            {
-                user.Name = updatedUser.Name;
-                return RedirectToAction(nameof(Index));
+            updatedUser.Id = id;
+            _context.UpdateUser(updatedUser);
+            return RedirectToAction(nameof(Index));
             }
             return View(updatedUser);
         }
 
-        // GET: User/Delete/5
         public ActionResult Delete(int id)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _context.GetAllUsers().SingleOrDefault(i=> i.Id == id);
             if (user == null)
             {
-                return NotFound();
+            return NotFound();
             }
             return View(user);
         }
 
-        // POST: User/Delete/5
-        [HttpPost, ActionName("Delete")]
-        public ActionResult DeleteConfirmed(int id)
+        [HttpPost]
+        public ActionResult Delete(int id, IFormCollection collection)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _context.GetAllUsers().SingleOrDefault(i=> i.Id == id);
             if (user == null)
             {
-                return NotFound();
+            return NotFound();
             }
-
-            userlist.Remove(user);
+            _context.DeleteUser(id);
             return RedirectToAction(nameof(Index));
         }
-
-        // GET: User/Search
-        public ActionResult Search(string searchTerm)
-        {
-            var filteredUsers = userlist.Where(u => u.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
-            return View("Index", filteredUsers);
-        }
-    }
-}
+        
+       }
